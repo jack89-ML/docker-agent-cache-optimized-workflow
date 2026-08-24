@@ -24,16 +24,16 @@ Most LLM providers cache the **prefix** of a conversation automatically. If requ
 
 ## Measured results (production validation)
 
-Real run on a dedicated `deepseek-v4-pro` agent container, 305 API calls in a single session block:
+Three independent validation runs on dedicated `deepseek-v4-pro` agent containers (no human interventions):
 
-| Metric | Value |
-|---|---|
-| Cache-read tokens | 49.86M out of 50.38M input |
-| Cache-hit ratio | **98.96%** |
-| Miss tokens per call | ~1.3-1.6K (stable context ~177K) |
-| Real cost (with cache) | ~$1.2 |
-| Cost without cache | ~$21.7 |
-| Savings | **~94% (≈20×)** |
+| Run | Cache-hit | Cost (real) | Cost w/o cache | Saving | Grade |
+|---|---|---|---|---|---|
+| Test 1 — FocusPulse PWA (35 calls) | 97.2% | $0.105 | ~$1.16 | ~91% | 9.3/10 |
+| Test 2 — FocusPulse Android (67 calls) | 98.5% | $0.147 | ~$2.39 | ~94% | 9.0/10 |
+| VITA web+Android (305 calls, prod) | 98.96% | ~$1.2 | ~$21.7 | ~94% | — |
+| **Combined** | **98.8%** | **~$1.45** | **~$25.3** | **~94%** | — |
+
+> **Savings ≈94% (~20×)** across all runs.
 
 ## Quick start
 
@@ -82,7 +82,7 @@ cp -r docker-agent-cache-optimized-workflow ~/.hermes/skills/autonomous-ai-agent
 
 ## Validation
 
-- [TEST_RESULTS.md](TEST_RESULTS.md) — Test 1 (2026-08-24): FocusPulse PWA for Windows 11, fully autonomous run, 35 calls, 97.2% cache-hit, 18% of budget, 24/24 tasks, 28/28 smoke tests, no human interventions, no delegation. Overall grade 9.3/10.
+- [TEST_RESULTS.md](TEST_RESULTS.md) — Test 1 (2026-08-24): FocusPulse PWA for Windows 11, 35 calls, 97.2% cache-hit, 18% of budget, 24/24 tasks, 28/28 smoke tests, grade 9.3/10 · Test 2 (2026-08-24): FocusPulse Android native, 67 calls, 98.5% cache-hit, 10% of budget, 4/4 sprints, APK installed on device, grade 9.0/10
 
 ## Run the tests
 
