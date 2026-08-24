@@ -80,6 +80,10 @@ cp -r docker-agent-cache-optimized-workflow ~/.hermes/skills/autonomous-ai-agent
 └── CITATION.cff
 ```
 
+## Validation
+
+- [TEST_RESULTS.md](TEST_RESULTS.md) — Test 1 (2026-08-24): FocusPulse PWA for Windows 11, fully autonomous run, 35 calls, 97.2% cache-hit, 18% of budget, 24/24 tasks, 28/28 smoke tests, no human interventions, no delegation. Overall grade 9.3/10.
+
 ## Run the tests
 
 ```bash
