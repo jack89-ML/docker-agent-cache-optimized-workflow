@@ -1,55 +1,31 @@
 # CONTEXT — <PROJECT_NAME>
 
-> **Uso obbligatorio**: questo file va letto ALL'INIZIO di ogni sessione e va
-> mantenuto STABILE nel contesto (mai riscritto a metà conversazione) per
-> massimizzare i CACHE HIT del provider (cache-read ≈ $0.004/M vs $0.44/M).
+> **Mandatory use**: read this file AT THE START of every session and keep it
+> STABLE in the context (never rewrite it mid-conversation) to maximize the
+> provider's CACHE HITS (cache-read ≈ $0.007-0.022/M vs $0.22-0.66/M miss).
 
-## 1. MISSIONE
-<Descrivi il progetto in 2-3 frasi: cosa costruisce, per chi, vincoli principali.>
+## 1. MISSION
+<Describe the project in 2-3 sentences: what it builds, for whom, main constraints.>
 
-## 2. REGOLE CACHE-HIT (SEMPRE — non negoziabile)
-1. Contesto stabile in testa: system prompt + questo file + schema dati = primi blocchi.
-2. Dati dinamici (valori che cambiano) SEMPRE dopo i blocchi statici.
-3. Leggi i file UNA volta per sessione; non riscaricarli a ogni turno.
-4. Mai dump grezzi: solo aggregati, mai 60KB di JSON nel contesto.
-5. Sessioni lunghe: non riavviare il container a metà task (la cache muore).
-6. Non incollare mai script/file interi nel contesto: riassumi + cita il percorso.
+## 2. CACHE-HIT RULES (ALWAYS — non-negotiable)
+1. Stable context at the top: system prompt + this file + data schema = first blocks.
+2. Dynamic data (changing values) ALWAYS goes after the static blocks.
+3. Read the files ONCE per session; do not reload them every turn.
+4. Never raw dumps: only aggregates, never 60KB of JSON in the context.
+5. Long sessions: never restart the container mid-task (the cache dies).
+6. Never paste whole scripts/files into the context: summarize + cite the path.
 
 ## 3. STACK
-- Linguaggi/framework: <...>
-- Backend/sorgente dati: <host, endpoint, DB>
-- Trasporto/rete: <ZeroTier, LAN, VPN...>
-- Librerie chiave: <...>
+- Languages/frameworks: <...>
+- Backend/data source: <host, endpoint, DB>
+- Transport/network: <ZeroTier, LAN, VPN...>
+- Key libraries: <...>
 
-## 4. SEZIONI / MODULI (se applicabile)
-1. <Modulo A> — <descrizione>
-2. <Modulo B> — <descrizione>
+## 4. SECTIONS / MODULES (if applicable)
+1. <Module A> — <description>
+2. <Module B> — <description>
 
-## 5. MAPPA SCRIPT/SERVIZI → MODULI (riusare, NON riscrivere)
-| Script/Servizio | Output | Modulo |
-|---|---|---|
-
-## 6. DESIGN SYSTEM / CONVENZIONI
-- Palette: <colori esadecimali + significato>
-- Tipografia: <...>
-- Vincoli visivi: <contrasto, dimensione font...>
-
-## 7. RIFERIMENTI (da emulare / da evitare)
-- <App o pattern di riferimento>
-- <Errori noti da non ripetere>
-
-## 8. DATI DI ESEMPIO (per test — reali anonimizzati, non inventare)
-- <valori campione>
-
-## 9. COSTI E MODELLI
-- Orchestratore: <model> ($prezzi)
-- Subagente: <model> ($prezzi, cache)
-- Budget totale stimato: <€>
-- SEMPRE: contesto stabile → cache hit → costo minimo
-
-## 10. VINCOLI
-- MAI chiavi API nel codice.
-- MAI modificare dati di produzione in scrittura.
-- MAI esporre servizi su Internet (solo LAN/VPN).
-- MAI inventare dati: se una fonte non risponde, documenta il blocco.
-- Ogni implementazione va TESTATA prima di dichiararla done.
+## 5. DATA ACCESS RULES
+- Databases: READ-ONLY (WAL mode). Never write to production data.
+- Credentials: only those explicitly documented here; never guess or invent them.
+- Sources: verify reachability before use; if unreachable, document the block.

@@ -1,59 +1,60 @@
 # MASTER PLAN — <PROJECT_NAME>
 
-> Stato: **PRONTO PER SPRINT 1** · Eseguito da: agente autonomo <MODEL_A> + subagente <MODEL_B>
-> Documento di riferimento: `CONTEXT.md` (obbligatorio leggerlo PRIMA)
+> Status: **READY FOR SPRINT 1** · Executed by: autonomous agent <MODEL_A> + subagent <MODEL_B>
+> Reference document: `CONTEXT.md` (mandatory: read it FIRST)
 
-## ARCHITETTURA TARGET
+## TARGET ARCHITECTURE
 
 ```
-<diagramma ASCII: sorgente dati → servizio/API → app/client>
+<ASCII diagram: data source → service/API → app/client>
 ```
 
-**REGOLE D'ORO DELL'ARCHITETTURA (vincolanti)**:
-1. MAI eseguire script CLI a ogni richiesta (lento + lock su DB).
-2. MAI scrivere su dati di produzione dal servizio (sola lettura, WAL).
-3. Cache in memoria; invalidazione SOLO su evento di aggiornamento dati.
-4. Zero dipendenze pesanti nel servizio.
-5. Accesso SOLO via LAN/VPN — MAI esposto su Internet.
+**GOLDEN ARCHITECTURE RULES (binding)**:
+1. NEVER run CLI scripts per request (slow + DB locks).
+2. NEVER write to production data from the service (read-only, WAL).
+3. In-memory cache; invalidate ONLY on data-update events.
+4. Zero heavy dependencies in the service.
+5. Access ONLY via LAN/VPN — NEVER exposed to the Internet.
 
-## SPRINT PLAN (4 sprint sequenziali + fase 0)
+## SPRINT PLAN (4 sequential sprints + phase 0)
 
-### FASE 0 — Documentazione (immediata)
-- [x] CONTEXT.md nel workspace del container
-- [x] Master plan (questo file)
-- [ ] Verificare che il container legga entrambi i file
+### PHASE 0 — Documentation (immediate)
+- [x] CONTEXT.md in the container workspace
+- [x] Master plan (this file)
+- [ ] Verify the container reads both files
 
-### SPRINT 1 — <NOME> (modello: <X>)
-**Obiettivo**: <descrizione>
+### SPRINT 1 — <NAME> (model: <X>)
+- [ ] 1.1 <goal>
+- [ ] 1.2 <goal>
+- [ ] 1.3 <goal>
+- [ ] 1.4 <goal>
+- [ ] 1.5 <goal>
+- [ ] 1.6 <goal>
+- [ ] 1.7 <goal>
+- [ ] 1.8 <goal>
+- [ ] 1.9 <goal>
+- [ ] 1.10 <goal>
+- [ ] 1.11 <goal>
+- [ ] 1.12 Real test (curl/build/run)
 
-Task: <elenco 1.1-1.13 dalla task list>
-**Done = <criterio di completamento misurabile>**
+### SPRINT 2 — <NAME> (model: <X>)
+- [ ] 2.1 <goal>
+- [ ] 2.2 <goal>
+- [ ] 2.3 <goal>
+- [ ] 2.4 <goal>
+- [ ] 2.5 <goal>
 
-### SPRINT 2 — <NOME> (modello: <X>)
-**Obiettivo**: <descrizione>
-Task: <elenco 2.1-2.11>
-**Done = <criterio>**
+### SPRINT 3 — <NAME> (model: <X>)
+- [ ] 3.1 <goal>
+- [ ] 3.2 <goal>
+- [ ] 3.3 <goal>
 
-### SPRINT 3 — <NOME> (modello: <X>)
-**Obiettivo**: <descrizione>
-Task: <elenco 3.1-3.10>
-**Done = <criterio>**
+### SPRINT 4 — <NAME> (model: <X>)
+- [ ] 4.1 <goal>
+- [ ] 4.2 <goal>
+- [ ] 4.3 <goal>
 
-### SPRINT 4 — Hardening & Deploy (modello: <X>)
-**Obiettivo**: <descrizione>
-Task: <elenco 4.1-4.9>
-**Done = <criterio>**
-
-## MATRICE MODELLI PER SPRINT
-
-| Sprint | Modello | Ruolo | Perché |
-|---|---|---|---|
-| 1 | <MODEL_B> | <ruolo> | <motivo> |
-| 2 | <MODEL_A> | <ruolo> | <motivo> |
-| 3 | <A+B> | <ruolo> | <motivo> |
-| 4 | <MODEL_C se serve> | <ruolo> | <motivo> |
-
-## REPORTING (aggiornamento costante)
-
-- Ogni sprint: `STATUS_<sprint>.md` nel workspace con task, problemi, verifiche, costi.
-- Watchdog ogni 15 min: stato container + costi/token/cache → messaggio su chat (dedup).
+## BUDGET & GUARDRAILS
+- Allocated budget per sprint: <$X> — the agent records cost in every STATUS file.
+- Kill-switch: `docker stop agent-<PROJECT_NAME>` / `tmux kill-session -t agent`.
+- Destructive actions require human approval (see AGENT_PROMPT.md).

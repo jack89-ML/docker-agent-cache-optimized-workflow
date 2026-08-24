@@ -1,20 +1,24 @@
 ---
 name: docker-agent-cache-optimized-workflow
 description: "Use when deploying a Docker agent with cache-hit strategy."
-version: 1.0.0
-author: Hermes Agent
+version: 1.1.0
+author: Jacopo Peracchio (crafted with Hermes Agent)
 license: MIT
 platforms: [linux]
 metadata:
   hermes:
-    tags: [docker, agent, autonomous, caching, cost-optimization, delegation, tmux]
+    tags: [docker, agent, autonomous, caching, cost-optimization, delegation, tmux, security, watchdog]
 ---
 
 # Docker Agent Workflow with Cache-Hit Strategy
 
 Deploy a long-running autonomous agent in a Docker container, give it a task
 list and stable context files, and maximize LLM prompt-cache hits to cut API
-costs (typically 70-90% of input tokens served from cache).
+costs (typically 90%+ of input tokens served from cache). Built with and for
+[Hermes](https://hermes-agent.nousresearch.com) (Nous Research's personal AI
+agent); the caching rules are provider-agnostic and the Hermes-specific
+commands (`hermes config`, `hermes chat`, tmux sessions) are shown as
+examples.
 
 ## When to Use
 
@@ -26,42 +30,45 @@ costs (typically 70-90% of input tokens served from cache).
 ## Quick Start (scaffold)
 
 ```bash
-# Compila i template una volta, poi per OGNI nuovo progetto:
+# Generate the templates once, then for EVERY new project:
 bash scripts/scaffold_agent.sh <project_name> <image> <volume> <env_file> [docker_args...]
 
-# Esempio:
-bash scripts/scaffold_agent.sh myapp nousresearch/hermes-agent /opt/myapp-data /opt/myapp.env --network host
+# Example:
+bash scripts/scaffold_agent.sh myapp nousresearch/hermes-agent /opt/myapp-data /opt/myapp.env
 ```
 
-Lo script genera i 4 file di contesto dai template in `templates/`, crea il
-container, avvia la sessione tmux e inietta il prompt. Dopo il lancio:
-**compila i placeholder `<...>` nei 4 file** (il progetto specifico).
+The script generates the 4 context files from `templates/`, creates the
+container, starts the persistent tmux session and injects the agent prompt.
+After launch: **fill in the `<...>` placeholders** in the 4 files
+(project-specific details).
 
 ## Key Insight: Prompt Caching Is Prefix-Based
 
 Most providers (DeepSeek, Qwen, Anthropic, OpenAI) cache the **prefix** of a
 conversation automatically: if request N+1 starts with the same tokens as
 request N, those tokens are billed at a heavily discounted "cache read" rate
-(e.g. DeepSeek $0.004/M vs $0.44/M — ~99% off).
+(e.g. DeepSeek v4-flash off-peak: $0.007/M hit vs $0.22/M miss; v4-pro
+$0.022/M vs $0.66/M — roughly 97% off).
 
 **The strategy is therefore: keep a STABLE PREFIX and push all changing data
 to the TAIL of the context.** Never interleave static and dynamic content.
+The gain scales with prefix STABILITY, not prefix size.
 
-## Validazione misurata (progetto VITA, 23-24/08/2026)
+## Measured Validation (2026-08-23/24)
 
-Risultati reali dell'applicazione di questa strategia (container agente dedicato
-deepseek-v4-pro, 305 chiamate, blocco unico di sessioni):
+Real run of this strategy on a dedicated deepseek-v4-pro agent container,
+305 API calls in a single session block (project VITA, health-monitoring app):
 
-- Cache-read: 49,86M token su 50,38M di input = **98,96%** (99,2% nella prima
-  sessione, 99,0% nella seconda)
-- Token miss per chiamata: ~1,3-1,6K con contesto stabile ~177K — prova che i
-  dati dinamici sono rimasti in coda al prefisso
-- Costo reale: **~$1.2 invece di ~$21.7 senza cache → -94% (≈20×)**
-- La cache è sopravvissuta 4 ore tra due sessioni con lo stesso prefisso
-- Unica rottura registrata: la compressione di contesto (necessaria, ~$0.03)
+- Cache-read: 49.86M tokens out of 50.38M input = **98.96%** (99.2% in the
+  first session, 99.0% in the second)
+- Miss tokens per call: ~1.3-1.6K against a ~177K stable context — proof that
+  dynamic data stayed at the tail of the prefix
+- Real cost: **~$1.2 instead of ~$21.7 without cache → -94% (≈20×)**
+- The cache survived 4 hours between two sessions with the same prefix
+- Only cache break observed: context compression (necessary, ~$0.03 each)
 
-Regola di salute: se i miss per chiamata salgono sopra ~2K con contesto >100K,
-una regola è stata violata (dump grezzi, file riletti, prefisso mescolato).
+Health rule: if miss tokens per call climb above ~2K with a context >100K, a
+rule was violated (raw dumps, re-read files, interleaved prefix).
 
 ## Workflow
 
@@ -83,6 +90,11 @@ Rules encoded INTO AGENT_PROMPT.md (make them binding):
 3. Never re-read the same files every turn — read once, reuse.
 4. Never paste large files/scripts verbatim into context — summarize + cite path.
 5. Keep sessions long: do NOT restart the container mid-sprint (cache dies).
+6. Command allowlist: only the tools needed for the sprint; destructive
+   commands (rm, drop, force-push, writes to production data) require human
+   approval and are logged.
+7. Budget awareness: report accumulated token/cost in every STATUS file; stop
+   and ask if the sprint exceeds its allocated budget.
 
 ### 2. Launch a persistent interactive session (tmux, NOT one-shot)
 
@@ -105,16 +117,30 @@ docker exec <container> bash -c \
 Send follow-up steering messages the same way (send-keys). Capture progress:
 `tmux capture-pane -t agent -p | tail -40`.
 
+**Robustness note.** Interactive paste is the pragmatic default, but it is
+fragile (timing, TTY state). For production, prefer an idempotent injection:
+an entrypoint script in the image that reads `AGENT_PROMPT.md` from the
+workspace and starts the agent itself, so `docker restart` resumes cleanly
+(cold cache, but state preserved). Never rely on interactive paste for
+recovery.
+
 ### 3. Give the agent access to its data sources
 
-- **Network**: if the agent must reach the host or other LAN hosts, run the
-  container with `--network host` (bridge mode is firewalled by default).
+- **Network**: use `--network host` ONLY when the agent must reach the host or
+  other LAN hosts (bridge mode is firewalled by default). It exposes the host
+  network namespace to the container: prefer a dedicated bridge or an
+  internal network when possible, and never use it with untrusted images.
   Verify reachability FROM the container (ping/nc/ssh) before declaring done.
 - **SSH key**: copy the key into the persistent volume (`<VOL>/.ssh/`),
-  chown to the container UID, and TELL the agent the exact command to use.
-  The agent cannot guess credentials that exist but were never communicated.
-- **Databases**: connect read-only (WAL mode); never let the agent write to
-  production data.
+  chown to the container UID, restrict permissions to 0600, and TELL the
+  agent the exact command to use. The agent cannot guess credentials that
+  exist but were never communicated.
+- **Databases**: connect read-only (WAL mode, `mode=ro` URI) with scoped
+  credentials; never let the agent write to production data.
+- **Secrets**: keep API keys in the env-file, chmod 0600, never commit them;
+  one key per line (duplicate lines break naive `grep` parsing — if you edit
+  an env file by hand, check for duplicates). Env vars are loaded only at
+  container CREATE — `docker restart` does NOT re-read the env file.
 
 ### 4. Delegate heavy subtasks to a second model (optional)
 
@@ -131,20 +157,74 @@ hermes config set delegation.base_url <endpoint>
 
 Encode the delegation rules in AGENT_PROMPT.md (which sprint → which model).
 
-### 5. Monitor cost, tokens and cache (watchdog)
+### 5. Monitor cost, tokens and cache (zero-token watchdog)
 
-If Hermes stores usage in a SQLite DB (`session_model_usage` table with
-`input_tokens`, `output_tokens`, `cache_read_tokens`, `cache_write_tokens`,
-`estimated_cost_usd`), build a watchdog script that:
+A ready-made script is included: `scripts/usage_report.sh <state.db>` — reads
+the `session_model_usage` table (columns `input_tokens`, `output_tokens`,
+`cache_read_tokens`, `cache_write_tokens`, `estimated_cost_usd`) and prints a
+compact 24h report (calls, in/out/cache tokens, cache-hit %, estimated cost).
 
-- Reads SUM over the last 24h
-- Computes cache-hit % = cache_read / (input + cache_read)
-- Sends a Telegram/chat message ONLY when the state hash changes (dedup)
-- Runs every 15 min via cron with `no_agent: true` (zero tokens)
+For change-only alerts, wrap it in a cron job with `no_agent: true` and
+hash-dedup (send a message ONLY when the state hash changes — the pattern
+used by api-cost-monitoring). Example:
 
-Also verify `docker exec <container> bash -c 'env | grep <KEY>'` — env vars
-are only loaded at container CREATE; `docker restart` does NOT re-read
-`--env-file`. Recreate the container when adding keys.
+```
+* * * * *  usage_report.sh /opt/data/state.db > /tmp/usage.txt \
+           && sha256sum /tmp/usage.txt | diff -q - <(cat /tmp/usage.hash) \
+           && telegram-send < /tmp/usage.txt || sha256sum /tmp/usage.txt > /tmp/usage.hash
+```
+
+## Security Hardening (production)
+
+- **Non-root**: run the container as a non-root user (`docker run --user
+  10000:10000 ...`) when the image supports it; keep root only for
+  bootstrapping (e.g. installing tmux with `docker exec -u 0 ...`).
+- **Read-only filesystem**: mount the workspace read-write but the rest of the
+  filesystem read-only (`--read-only` with tmpfs for /tmp) when the agent
+  does not need to write outside the workspace.
+- **Minimal capabilities**: `--cap-drop ALL` unless the task needs raw
+  networking.
+- **Network exposure**: see §3 — `--network host` is opt-in, not the default.
+- **Secrets**: env-file 0600, never in the repo, never printed by the agent.
+
+## Robustness & Recovery
+
+- **State files are the checkpoint**: STATUS_*.md + the task list are the
+  source of truth. If the container restarts (cache dies), the agent resumes
+  from the state files — the first call after restart is a cold miss (one
+  full context at miss price), then caching resumes.
+- **Idempotent injection**: prefer an entrypoint that reads AGENT_PROMPT.md
+  from the workspace over interactive paste (see §2).
+- **Locking**: a single long-running session per container; don't run two
+  agents on the same workspace (they would fight over the task list).
+
+## Cache Portability (provider notes)
+
+| Provider | Cache type | TTL / notes |
+|---|---|---|
+| DeepSeek | Automatic prefix cache | TTL in the order of hours; weekend and off-peak hours (01-04, 06-10 UTC Mon-Fri) bill at half price; accounts may be grandfathered on older price tiers |
+| Qwen / DashScope | Automatic prefix cache | Same prefix-caching model; cache-write tokens billed separately |
+| Anthropic | Automatic (min 1024-token prefix) | TTL ~5 min; long sessions need a heartbeat or the prefix expires |
+| OpenAI | Automatic (min 1024-token prefix) | TTL ~5-10 min on most models |
+
+The rules (stable prefix, dynamic tail, read-once) apply to all of them; the
+prices and TTLs differ — verify per provider and per account tier.
+
+**Context compression** rewrites the history and breaks the prefix: it costs
+a full cold call (~$0.03 on a 177K context). Acceptable once, never in a
+loop — bound the context instead (aggregate, don't dump).
+
+## Operational Guardrails
+
+- **Budget**: a cron that polls the provider balance (e.g. DeepSeek
+  `GET /user/balance`) and alerts under a threshold; the agent records
+  accumulated cost in every STATUS file.
+- **Kill-switch**: document the stop command (`docker stop <container>` /
+  `tmux kill-session -t agent`) and a hard budget cap per sprint.
+- **Destructive actions**: no rm/drop/force-push/write-to-prod without human
+  approval (encode in AGENT_PROMPT.md — see §1 rule 6).
+- **Read-only data**: the agent never opens data DBs in write mode; auth/user
+  data lives in a separate writable DB.
 
 ## Verification Checklist
 
@@ -152,9 +232,11 @@ are only loaded at container CREATE; `docker restart` does NOT re-read
 - [ ] Agent read them in the fixed order (visible in session capture)
 - [ ] Container reaches its data source (ssh/ping/curl verified)
 - [ ] tmux session alive after N minutes; agent not stuck on a question
-- [ ] cache_read_tokens / (input_tokens + cache_read_tokens) ≥ 60%
+- [ ] cache_read_tokens / (input_tokens + cache_read_tokens) ≥ 90%
 - [ ] Watchdog reports cost+tokens; dedup works (no spam)
 - [ ] Status files (STATUS_*.md) appear in the workspace as the agent works
+- [ ] Container runs non-root; secrets file is 0600; no secrets in the repo
+- [ ] `bash -n` passes on all shipped scripts; tests/test_scaffold.sh is green
 
 ## Pitfalls
 
@@ -163,19 +245,41 @@ are only loaded at container CREATE; `docker restart` does NOT re-read
 - **Restart kills cache**: never `docker restart` mid-sprint for config
   changes — recreate only when env keys change, accept the cache loss.
 - **Bridge network isolation**: default bridge cannot reach the host's LAN IP;
-  the host's port 22 appears closed. Use `--network host`.
+  the host's port 22 appears closed. Use `--network host` only when needed
+  (see Security Hardening).
 - **Env not re-read on restart**: `docker restart` ignores updated env files.
+- **Duplicate keys in env files**: two identical `KEY=` lines concatenate
+  under naive grep → broken Authorization headers. Dedupe env files.
 - **Agent invents data when blocked**: if a source is unreachable the agent may
   fabricate. Prompt must forbid this ("never invent data — document the block").
 - **One-shot vs persistent**: `chat -q` per task = no cache reuse. Always tmux.
 - **`hermes chat -c` means "continue session"**, not "chat with this prompt".
   Use `-q` for single queries, tmux for long sessions.
-- **Cron "NO-AGENT" senza flag**: un job che si chiama "(NO-AGENT)" ma senza
-  `no_agent=true` consuma token a ogni run (caso watch-dashboard 24/08/2026:
-  $0.07/giorno di chiamate che confermavano solo il lavoro già fatto dallo
-  script). Verificare SEMPRE il flag reale nel job.
-- **Account grandfathered**: DeepSeek può lasciare un account sui prezzi VECCHI
-  anche dopo un cambio listino (verificato 24/08: v4-pro ancora a
-  0.0084/0.42/0.84 per M invece dei nuovi 0.022/0.66/1.98). Le stime registrate
-  da Hermes usano snapshot stantie: rivalutare coi prezzi ufficiali correnti e
-  confrontare con entrambe le fasce (vedi llm-cost-telemetry).
+- **Cron "NO-AGENT" without the flag**: a job named "(NO-AGENT)" but without
+  `no_agent=true` consumes tokens on every run (real case: an hourly
+  dashboard job spending $0.07/day just confirming the script had already
+  done its work). Always verify the real flag in the job.
+- **Grandfathered pricing**: a provider may keep an account on OLD prices
+  after a price change (verified 2026-08-24: v4-pro still billed at
+  $0.0084/$0.42/$0.84 per M instead of the new $0.022/$0.66/$1.98). Hermes'
+  recorded estimates use stale price snapshots: revalue against the official
+  current prices and check both tiers (see the llm-cost-telemetry skill).
+
+## Repository Layout
+
+```
+├── SKILL.md                        # this playbook
+├── scripts/
+│   ├── scaffold_agent.sh           # one-shot scaffold: context files + container + tmux + prompt
+│   └── usage_report.sh             # zero-token cost/cache report from a Hermes state.db
+├── templates/
+│   ├── AGENT_PROMPT_TEMPLATE.md    # role prompt with cache rules + guardrails baked in
+│   ├── CONTEXT_TEMPLATE.md         # stable project context (mission, stack, constraints)
+│   ├── MASTER_PLAN_TEMPLATE.md     # architecture + sprint plan
+│   └── TASK_LIST_TEMPLATE.md       # executable task list with verification steps
+├── tests/
+│   └── test_scaffold.sh            # syntax + arg-validation smoke test
+├── EXAMPLES.md                     # end-to-end worked example
+├── README.md
+└── CITATION.cff
+```
