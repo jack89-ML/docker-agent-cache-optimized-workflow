@@ -5,7 +5,7 @@ authors:
   - family-names: "Peracchio"
     given-names: "Jacopo"
     orcid: ""
-version: "1.0.0"
+version: "1.1.0"
 date-released: "2026-08-24"
 url: "https://github.com/jack89-ML/docker-agent-cache-optimized-workflow"
 keywords:
