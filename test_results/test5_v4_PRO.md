@@ -28,13 +28,13 @@ so the two runs can be compared without overwriting.
 
 | Metric | Value |
 |---|---|
-| Cache-hit | **98.9%** — 5,182,208 cache-read / (5,182,208 + 60,068 miss) |
+| Cache-hit | **98.9%** — 6,136,704 cache-read / (6,136,704 + 63,800 miss) |
 | Planned budget | $3.00 |
-| Actual cost | $0.12 (recorded) |
-| Budget used | 4% |
-| API calls | 54 |
-| Input (miss) / output | 60,068 / 86,323 |
-| Cache-read | 5,182,208 |
+| Actual cost | $0.134 (recorded) |
+| Budget used | 4.5% |
+| API calls | 60 |
+| Input (miss) / output | 63,800 / 96,134 |
+| Cache-read | 6,136,704 |
 
 ## Verification
 
