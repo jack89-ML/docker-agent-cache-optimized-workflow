@@ -39,28 +39,6 @@ A complete playbook + scaffold for running multi-hour / multi-day autonomous age
 
 Most LLM providers cache the **prefix** of a conversation automatically. If request N+1 starts with the same tokens as request N, those tokens are billed at a heavily discounted *cache-read* rate (e.g. DeepSeek v4-flash off-peak: $0.007/M hit vs $0.22/M miss). The strategy is therefore: **keep a stable prefix, push all changing data to the tail of the context.** Never interleave static and dynamic content.
 
-## Philosophy: scientific division of labor for agents
-
-This workflow is not only a caching technique — it is an application of the
-classical theory of the division of labor to multi-agent systems:
-
-- **Adam Smith (1776)** — specialized agents with a stable, focused context
-  are more productive than generalists carrying everything (the "one gesture"
-  of the pin-factory worker = the stable prompt prefix).
-- **Émile Durkheim (1893)** — a fleet of identical agents sharing context is
-  *mechanical solidarity* (inefficient); specialized, interdependent agents
-  coordinated by standardized handoffs is *organic solidarity* (efficient).
-- **Frederick Taylor (1911)** — scientific management applied to tokens:
-  measurable rules (miss > 2K tokens per call = rule violated), scientific
-  model selection per sprint, separation of planning (orchestrator) and
-  execution (worker), standardized deliverables.
-- **Coase / Williamson** — the stable prefix is fixed capital amortized over
-  hundreds of calls (98%+ cache-hit = near-full amortization); the written
-  handoff is the transaction cost, minimized by delivery standards.
-
-The cache-hit rate is the unit labor cost of an agent organization. Design
-multi-agent projects as organizations, not as "agents chatting".
-
 ## Measured results (production validation)
 
 Three independent validation runs on dedicated `deepseek-v4-pro` agent containers (no human interventions):
