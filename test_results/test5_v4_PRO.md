@@ -32,6 +32,8 @@ so the two runs can be compared without overwriting.
 | Planned budget | $3.00 |
 | Actual cost | $0.134 (recorded) |
 | Budget used | 4.5% |
+| No-cache counterfactual | ~$2.69 |
+| Effective saving | ~95% |
 | API calls | 60 |
 | Input (miss) / output | 63,800 / 96,134 |
 | Cache-read | 6,136,704 |

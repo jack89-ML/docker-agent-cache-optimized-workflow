@@ -36,6 +36,8 @@ Deliverables: a structured report in markdown and a standalone HTML page.
 | Planned budget | $3.00 |
 | Actual cost | $0.096 (recorded) |
 | Budget used | 3.2% |
+| No-cache counterfactual | ~$1.11 |
+| Effective saving | ~91% |
 | API calls | 39 |
 | Input (miss) / output | 62,283 / 69,023 |
 | Cache-read | 2,438,144 |

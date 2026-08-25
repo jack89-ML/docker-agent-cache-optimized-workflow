@@ -35,6 +35,8 @@ in earlier runs (academic-literature-search, literature-review-report).
 | Planned budget | $3.00 |
 | Actual cost | $0.071 (recorded) |
 | Budget used | 2.4% |
+| No-cache counterfactual | ~$0.59 |
+| Effective saving | ~88% |
 | API calls | 21 |
 | Input (miss) / output | 41,224 / 55,411 |
 | Cache-read | 1,262,976 |
