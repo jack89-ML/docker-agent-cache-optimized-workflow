@@ -1,38 +1,37 @@
 # INSTALL — Docker Agent Workflow with Cache-Hit Strategy
 
-Skill per agenti (Hermes e altri) che deployano agenti Docker autonomi con
-strategia di ottimizzazione del prompt-cache. Questa repo È una skill:
-`SKILL.md` è il playbook che l'agente carica e segue; `scripts/` e
-`templates/` sono gli strumenti che il playbook usa.
+A skill for agents (Hermes and others) that deploy autonomous Docker agents
+with a prompt-cache optimization strategy. This repo IS a skill: `SKILL.md`
+is the playbook the agent loads and follows; `scripts/` and `templates/`
+are the tools the playbook uses.
 
-## Prerequisiti
+## Prerequisites
 
-- Linux x86_64 con Docker installato
-- Un agente basato su skills (Hermes, Claude Code, Codex, OpenClaw...)
-- (Consigliato) `uv` per gli script Python
+- Linux x86_64 with Docker installed
+- A skills-based agent (Hermes, Claude Code, Codex, OpenClaw...)
+- (Recommended) `uv` for the Python scripts
 
-## Opzione A — Installazione nativa come skill Hermes
+## Option A — Native install as a Hermes skill
 
 ```bash
 hermes skills install jack89-ML/docker-agent-cache-optimized-workflow
 ```
 
-Oppure dal package manager dell'ecosistema (funziona con qualsiasi agente
-basato su skills):
+Or via the ecosystem package manager (works with any skills-based agent):
 
 ```bash
 npx skills add jack89-ML/docker-agent-cache-optimized-workflow -g -y
 ```
 
-Verifica:
+Verify:
 
 ```bash
 hermes skills list | grep docker-agent-cache
-# oppure
+# or
 npx skills list
 ```
 
-## Opzione B — Clone manuale nella cartella skills
+## Option B — Manual clone into the skills directory
 
 ```bash
 git clone https://github.com/jack89-ML/docker-agent-cache-optimized-workflow.git
@@ -43,52 +42,45 @@ cp -r docker-agent-cache-optimized-workflow ~/.hermes/skills/autonomous-ai-agent
 # cp -r docker-agent-cache-optimized-workflow ~/.claude/skills/
 ```
 
-L'agente caricherà la skill automaticamente quando il task combacia con la
-descrizione ("Use when deploying a Docker agent with cache-hit strategy"),
-oppure su richiesta esplicita.
+The agent will load the skill automatically when the task matches its
+description ("Use when deploying a Docker agent with cache-hit strategy"),
+or on explicit request.
 
-## Opzione C — Uso diretto senza installazione
+## Option C — Direct use without installing
 
 ```bash
 git clone https://github.com/jack89-ML/docker-agent-cache-optimized-workflow.git
 cd docker-agent-cache-optimized-workflow
 ```
 
-Poi chiedi al tuo agente: "usa la skill in <percorso>/SKILL.md e applica il
-workflow al progetto X". L'agente leggerà il playbook dal percorso.
+Then ask your agent: "use the skill at <path>/SKILL.md and apply the
+workflow to project X". The agent will read the playbook from the path.
 
-## Flusso operativo (cosa succede dopo l'installazione)
+## Operational flow (what happens after install)
 
-1. L'agente carica `SKILL.md` (playbook)
-2. Genera i 4 file di contesto per il progetto da `templates/`:
+1. The agent loads `SKILL.md` (the playbook)
+2. It generates the 4 context files for the project from `templates/`:
    `AGENT_PROMPT.md`, `CONTEXT.md`, `MASTER_PLAN.md`, `TASK_LIST.md`
    (via `scripts/scaffold_agent.sh <project> <image> <volume> <env_file>`)
-3. Compila i placeholder `<...>` (nome progetto, modelli, endpoint)
-4. Crea il container Docker e avvia la sessione persistente (tmux)
-5. Inietta il prompt dell'agente e il lavoro parte
-6. Monitora costi e cache-hit con `scripts/usage_report.sh <state.db>`
+3. It fills in the `<...>` placeholders (project name, models, endpoint)
+4. It creates the Docker container and starts the persistent session (tmux)
+5. It injects the agent prompt and work begins
+6. It monitors cost and cache-hit with `scripts/usage_report.sh <state.db>`
 
-## Verifica rapida post-installazione
+## Quick post-install verification
 
 ```bash
-bash -n scripts/*.sh                  # sintassi OK
-bash tests/test_scaffold.sh           # smoke test dello scaffold
-./scripts/scaffold_agent.sh --help    # argomenti corretti
+bash -n scripts/*.sh                  # syntax OK
+bash tests/test_scaffold.sh           # scaffold smoke test
+./scripts/scaffold_agent.sh --help    # correct arguments
 ```
 
-## Aggiornamenti
+## Updates
 
-La skill si aggiorna con `git pull` (se clonata) oppure:
+The skill updates with `git pull` (if cloned) or:
 
 ```bash
 hermes skills update docker-agent-cache-optimized-workflow
-# oppure
+# or
 npx skills update
 ```
-
-## Nota filosofica
-
-Questa repo è volutamente sia codice sia conoscenza: clonarla è il modo
-naturale di usarla (la skill si aggiorna con git). L'installazione via
-package manager crea una copia statica: va reinstallata per gli
-aggiornamenti.
