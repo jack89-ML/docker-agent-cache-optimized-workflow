@@ -4,6 +4,23 @@ Deploy long-running autonomous agents in Docker containers with a prompt-cache-h
 
 **Built with [Hermes](https://hermes-agent.nousresearch.com)** — Nous Research's personal AI agent. The caching rules are provider-agnostic (DeepSeek, Qwen, Anthropic, OpenAI); the Hermes-specific commands (`hermes config`, `hermes chat`, tmux sessions) are shown as working examples.
 
+## Installation
+
+This repo IS a skill: `SKILL.md` is the playbook your agent loads, `scripts/` and `templates/` are the tools it uses. Install it as a skill, or use it directly:
+
+```bash
+# Native Hermes install
+hermes skills install jack89-ML/docker-agent-cache-optimized-workflow
+
+# Any skills-based agent (Claude Code, Codex, ...)
+npx skills add jack89-ML/docker-agent-cache-optimized-workflow -g -y
+
+# Or clone and point your agent at SKILL.md
+git clone https://github.com/jack89-ML/docker-agent-cache-optimized-workflow.git
+```
+
+Full instructions (options, verification, update): **[INSTALL.md](INSTALL.md)**
+
 ## What it does
 
 A complete playbook + scaffold for running multi-hour / multi-day autonomous agent projects (sprint-based development, data pipelines, app builds) at minimal token cost:
