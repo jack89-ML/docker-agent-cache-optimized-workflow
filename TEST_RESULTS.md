@@ -1,9 +1,11 @@
 # Test Results
 
-Validation of the `docker-agent-cache-optimized-workflow` across three runs.
-Same base app (FocusPulse, Pomodoro timer), two models, one framework bug in
-between. Each test has its own file with the full accounting: computed
-cache-hit ratio, planned budget, actual cost, no-cache counterfactual.
+Validation of the `docker-agent-cache-optimized-workflow` across six runs.
+Two task types: app builds (FocusPulse, Pomodoro timer, as PWA and native
+Android) and academic literature reviews (HTS, division of labor). Two
+models, one framework bug in between. Each test has its own file with the
+full accounting: computed cache-hit ratio, planned budget, actual cost,
+no-cache counterfactual.
 
 | Test | File | Model | Task | Cache-hit | Budget | Cost | Saving | Score |
 |---|---|---|---|---|---|---|---|---|
