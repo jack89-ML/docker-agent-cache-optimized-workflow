@@ -2,7 +2,7 @@
 
 > **Mandatory use**: read this file AT THE START of every session and keep it
 > STABLE in the context (never rewrite it mid-conversation) to maximize the
-> provider's CACHE HITS (cache-read ≈ $0.007-0.022/M vs $0.22-0.66/M miss).
+> provider's CACHE HITS 
 
 ## 1. MISSION
 <Describe the project in 2-3 sentences: what it builds, for whom, main constraints.>
