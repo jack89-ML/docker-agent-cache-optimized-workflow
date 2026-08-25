@@ -1,19 +1,18 @@
 # Test Results
 
-Validazione del workflow `docker-agent-cache-optimized-workflow` su tre run.
-Stessa app di base (FocusPulse, timer Pomodoro), due modelli, un bug di
-framework in mezzo. Ogni test ha il suo file con il conto completo: cache-hit
-calcolato, budget pensato, costo sostenuto, controfattuale senza cache.
+Validation of the `docker-agent-cache-optimized-workflow` across three runs.
+Same base app (FocusPulse, Pomodoro timer), two models, one framework bug in
+between. Each test has its own file with the full accounting: computed
+cache-hit ratio, planned budget, actual cost, no-cache counterfactual.
 
-| # | File | Modello | App | Cache-hit | Budget | Costo sostenuto | Risparmio vs senza cache | Voto |
+| Test | File | Model | App | Cache-hit | Budget | Cost | Saving | Score |
 |---|---|---|---|---|---|---|---|---|
 | 1 | [test1_v4_PRO.md](test_results/test1_v4_PRO.md) | deepseek-v4-pro | PWA (Windows 11) | 97.2% | $0.60 | ~$0.11 | ~90% | 9.3/10 |
-| 2 | [test2_v4_PRO.md](test_results/test2_v4_PRO.md) | deepseek-v4-pro + delega qwen3.8-max (bloccata da bug) | Android nativa (APK) | 98.5% | $1.50 | $0.147 | ~94% | 9.0/10 |
-| 3 | [test3_qwen38_MAX.md](test_results/test3_qwen38_MAX.md) | qwen3.8-max | PWA (live su :8000) | 99.99% | $10.00 | ~$1.42 (stimato) | ~84% | 9.4/10 |
+| 2 | [test2_v4_PRO.md](test_results/test2_v4_PRO.md) | deepseek-v4-pro + qwen3.8-max delegation (blocked) | Native Android (APK) | 98.5% | $1.50 | $0.147 | ~94% | 9.0/10 |
+| 3 | [test3_qwen38_MAX.md](test_results/test3_qwen38_MAX.md) | qwen3.8-max | PWA (live on :8000) | 99.99% | $10.00 | ~$1.42 (estimated) | ~84% | 9.4/10 |
 
-In breve: la strategia del prefisso stabile regge su entrambi i modelli
-(97-99.99% di cache-read), il costo reale è sempre una frazione del budget
-pensato, e la leva di costo dominante è l'output, non l'input. Il Test 2
-lascia aperto l'unico ramo non validato: la delega a un secondo modello,
-bloccata da un bug del framework (sqlite WAL, issue #55305/#71498), non
-dalla skill.
+In short: the stable-prefix strategy holds on both models (97-99.99%
+cache-read), the real cost is always a fraction of the planned budget, and
+the dominant cost lever is output, not input. Test 2 leaves one branch
+unvalidated: delegation to a second model, blocked by a framework bug
+(sqlite WAL, issue #55305/#71498), not by the skill.

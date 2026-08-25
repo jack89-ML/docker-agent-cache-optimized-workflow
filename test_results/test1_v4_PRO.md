@@ -1,80 +1,82 @@
 # Test 1 — FocusPulse PWA · deepseek-v4-pro
 
-**Status: PASSED** · 2026-08-24 · ~21 min totali (15 attivi) · 0 interventi umani
+**Status: PASSED** · Date: 2026-08-24 · ~21 min wall time (15 active) · 0 human interventions
 
-## Progetto e app
+## Overview
 
-FocusPulse è la web app Pomodoro con cui abbiamo validato il workflow: un
-timer 25/5/15 (focus, pausa breve, pausa lunga), statistiche degli ultimi 7
-giorni, suono, tema scuro/chiaro, installabile come PWA. Il progetto avviato
-per questo test: build completa dell'app dentro un container agent autonomo,
-con budget rigido e verifica reale (test, browser, installabilità) al posto
-della fiducia. L'app pensata doveva essere rapida da usare da tastiera e da
-schermo: presets 25/5 e 50/10, durate personalizzate, scorciatoie, un grafico
-a barre dell'ultima settimana e un'icona SVG inline. Niente di più. Il primo
-run l'ha prodotta con deepseek-v4-pro da solo, senza delega a un secondo
-modello.
-
-## Il conto, senza giri di parole
-
-| Voce | Valore |
-|---|---|
-| Cache-hit | **97.2%** — 2,527,744 cache-read / (2,527,744 + 72,987 miss) |
-| Costo iniziale pensato (budget) | $0.60 |
-| Costo totale sostenuto | ~$0.11 (registrato $0.105, tier prezzi legacy) |
-| Budget usato | 18% |
-| Costo senza cache (controfattuale) | ~$1.16 |
-| Risparmio effettivo | ~90% |
-| API calls | 35 |
-| Input (miss) / output | 72,987 / 74,529 |
-| Cache-read | 2,527,744 |
+FocusPulse is the Pomodoro web app used to validate the workflow: a 25/5/15
+timer (focus, short break, long break), 7-day statistics, sound, dark/light
+theme, installable as a PWA. The project for this test: full app build inside
+an autonomous agent container, with a hard budget and real verification
+(tests, browser, installability) instead of trust. The app was designed to be
+quick to use from keyboard and screen: 25/5 and 50/10 presets, custom
+durations, shortcuts, a 7-day bar chart, inline SVG icon. Nothing more. The
+first run produced it with deepseek-v4-pro alone, no delegation to a second
+model.
 
 ## Setup
 
 | Item | Value |
 |---|---|
 | Container | `agent-pomodoro` (nousresearch/hermes-agent, non-root uid 10000) |
-| Modello | deepseek-v4-pro (API ufficiale), singolo, nessuna delega |
-| Contesto | CONTEXT / MASTER_PLAN / TASK_LIST / AGENT_PROMPT (4 file) |
-| Task | FocusPulse: PWA Pomodoro installabile per Windows 11 |
-| Verifiche | 24/24 task · 28/28 smoke test (rieseguiti in autonomia) |
+| Model | deepseek-v4-pro (official API), single, no delegation |
+| Context | CONTEXT / MASTER_PLAN / TASK_LIST / AGENT_PROMPT (4 files) |
+| Task | FocusPulse: installable Pomodoro PWA for Windows 11 |
+| Verification | 24/24 tasks · 28/28 smoke tests (re-run independently) |
 
-## Come è andata
+## Cost summary
 
-- Ha letto i file di contesto nell'ordine previsto e scritto STATUS_SPRINT1..4
-  con il costo accumulato in ognuno.
-- 4 sprint sequenziali con verifica vera: test Node, curl, validazione
-  manifest JSON, criteri di installabilità.
-- Ha trovato e corretto un bug reale durante i test (`setBreakType` non
-  aggiornava lo stato live).
-- Si è costruita da sola una skill di verifica frontend headless dentro il
-  proprio container.
-- Nessun comando distruttivo, nessun dato inventato, server lasciato su e
-  verificato (HTTP 200).
+| Metric | Value |
+|---|---|
+| Cache-hit | **97.2%** — 2,527,744 cache-read / (2,527,744 + 72,987 miss) |
+| Planned budget | $0.60 |
+| Actual cost | ~$0.11 (recorded $0.105, legacy pricing tier) |
+| Budget used | 18% |
+| No-cache counterfactual | ~$1.16 |
+| Effective saving | ~90% |
+| API calls | 35 |
+| Input (miss) / output | 72,987 / 74,529 |
+| Cache-read | 2,527,744 |
 
-## Verifica della qualità
+## Verification
 
-Funzionamento controllato in browser: start/pausa/reset/skip, accuratezza del
-countdown, presets 25/5 e 50/10, durate custom, toggle suono, tema
-scuro/chiaro, scorciatoie, grafico 7 giorni, manifest + service worker,
-icona SVG inline. Installabilità verificata su Chromium. Giudizio dell'utente
-su Windows 11: "UI molto performante e davvero ottima. Nessun bug".
+Browser check of the running app: start/pause/reset/skip, countdown
+accuracy, 25/5 and 50/10 presets, custom durations, sound toggle,
+dark/light theme, keyboard shortcuts, 7-day chart, manifest + service
+worker, inline SVG icon. Installability criteria met on Chromium. The UI on
+Windows 11 was responsive and bug-free.
 
-## Voti
+## Agent behavior
+
+- Read the context files in the mandated order and wrote STATUS_SPRINT1..4,
+  each with accumulated cost.
+- Executed all 4 sprints sequentially with real verification (Node smoke
+  tests, curl, manifest JSON validation, installability criteria check).
+- Found and fixed a real bug during testing (`setBreakType` not updating
+  live state).
+- Created a `headless-frontend-verification` skill inside its own container.
+- Guardrails respected: no destructive commands, no fabricated data, server
+  left running and verified (HTTP 200).
+
+## Bugs
+
+One real bug found and fixed during the run: `setBreakType` did not update
+the live state. Caught by the agent's own testing, before delivery.
+
+## Scores
 
 | Dimension | Score |
 |---|---|
-| Autonomia (0 interventi, auto-verifica) | 9.5/10 |
-| Efficienza costi (18% del budget) | 10/10 |
-| Strategia cache (97.2%, ~90% risparmio) | 9.5/10 |
-| Qualità output (verificato dall'utente, nessun bug) | 9/10 |
-| Fedeltà al processo (ordine, status file, guardrail) | 9.5/10 |
-| **Totale** | **9.3/10** |
+| Autonomy (0 interventions, self-verification) | 9.5/10 |
+| Cost efficiency (18% of budget) | 10/10 |
+| Cache strategy (97.2%, ~90% saving) | 9.5/10 |
+| Output quality (verified, bug-free) | 9/10 |
+| Process fidelity (order, status files, guardrails) | 9.5/10 |
+| **Overall** | **9.3/10** |
 
-## Limiti, detti chiaramente
+## Limitations
 
-- Il deliverable è una PWA, non un'app nativa: la specifica diceva PWA, ma
-  l'aspettativa dell'utente era nativa. Da qui è nato il Test 2.
-- Un solo modello, nessuna delega esercitata.
-- La verifica visiva l'ha fatta l'utente a mano, nessun grading automatico
-  degli screenshot.
+- The deliverable is a PWA, not a native app: the spec said PWA, but the
+  goal was a native build. This is why Test 2 exists.
+- Single model, no delegation exercised.
+- Visual QA was manual, no automated screenshot grading.
