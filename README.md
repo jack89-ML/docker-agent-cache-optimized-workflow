@@ -1,6 +1,6 @@
 # Docker Agent Cache-Optimized Workflow
 
-Deploy long-running autonomous agents in Docker containers with a prompt-cache-hit strategy that cuts LLM API costs by **70-94%** — validated in production on a 305-call agent session (98.96% cache-hit, ~$1.2 real cost vs ~$21.7 without cache).
+Deploy long-running autonomous agents in Docker containers with a prompt-cache-hit strategy that cuts LLM API costs by **84-95%** — validated on 7 real runs (96.8-99.99% cache-hit) across two task categories: app builds and academic literature reviews.
 
 **Built with [Hermes](https://hermes-agent.nousresearch.com)** — Nous Research's personal AI agent. The caching rules are provider-agnostic (DeepSeek, Qwen, Anthropic, OpenAI); the Hermes-specific commands (`hermes config`, `hermes chat`, tmux sessions) are shown as working examples.
 
@@ -23,7 +23,7 @@ Full instructions (options, verification, update): **[INSTALL.md](INSTALL.md)**
 
 ## What it does
 
-A complete playbook + scaffold for running multi-hour / multi-day autonomous agent projects (sprint-based development, data pipelines, app builds) at minimal token cost:
+A complete playbook + scaffold for running multi-hour / multi-day autonomous agent projects (sprint-based development, app builds, academic literature reviews, data pipelines) at minimal token cost:
 
 - **Stable-prefix context files** — `CONTEXT.md`, `MASTER_PLAN.md`, `TASK_LIST.md`, `AGENT_PROMPT.md`: one role per file, never mixed with dynamic data.
 - **Persistent tmux sessions** instead of one-shot calls — the prompt cache lives in the running process.
@@ -41,16 +41,16 @@ Most LLM providers cache the **prefix** of a conversation automatically. If requ
 
 ## Measured results (production validation)
 
-Three independent validation runs on dedicated `deepseek-v4-pro` agent containers (no human interventions):
+Seven real runs on dedicated agent containers (no human interventions), grouped by task category. Full per-test accounting (cache-hit, budget, cost, counterfactual, scores) in **[TEST_RESULTS.md](TEST_RESULTS.md)**.
 
-| Run | Cache-hit | Cost (real) | Cost w/o cache | Saving | Grade |
+| Category | Runs | Cache-hit | Cost (real) | Cost w/o cache | Saving |
 |---|---|---|---|---|---|
-| Test 1 — FocusPulse PWA (35 calls) | 97.2% | $0.105 | ~$1.16 | ~91% | 9.3/10 |
-| Test 2 — FocusPulse Android (67 calls) | 98.5% | $0.147 | ~$2.39 | ~94% | 9.0/10 |
-| VITA web+Android (305 calls, prod) | 98.96% | ~$1.2 | ~$21.7 | ~94% | — |
-| **Combined** | **98.8%** | **~$1.45** | **~$25.3** | **~94%** | — |
+| App (PWA + Android, 3 runs) | 3 | 97.2-99.99% | ~$1.67 | ~$12.2 | ~86% |
+| Academic review (3 runs) | 3 | 96.8-98.9% | ~$0.30 | ~$4.39 | ~93% |
+| VITA production (305 calls) | 1 | 98.96% | ~$1.2 | ~$21.7 | ~94% |
+| **Combined** | **7** | **96.8-99.99%** | **~$3.2** | **~$38.3** | **~92%** |
 
-> **Savings ≈94% (~20×)** across all runs.
+> Savings 84-95% across all runs (~6-20x). Provider pricing differs (DeepSeek, Qwen); per-test numbers use each account's effective tier.
 
 ## Quick start
 
@@ -99,7 +99,8 @@ cp -r docker-agent-cache-optimized-workflow ~/.hermes/skills/autonomous-ai-agent
 
 ## Validation
 
-- [TEST_RESULTS.md](TEST_RESULTS.md) — Test 1 (2026-08-24): FocusPulse PWA for Windows 11, 35 calls, 97.2% cache-hit, 18% of budget, 24/24 tasks, 28/28 smoke tests, grade 9.3/10 · Test 2 (2026-08-24): FocusPulse Android native, 67 calls, 98.5% cache-hit, 10% of budget, 4/4 sprints, APK installed on device, grade 9.0/10
+- [TEST_RESULTS.md](TEST_RESULTS.md) — 6 documented tests across two task categories: App (FocusPulse PWA, FocusPulse Android, FocusPulse PWA on qwen3.8-max) and Academic review (HTS, HTS with /goal mode, division of labor). Cache-hit 96.8-99.99%, saving 84-95%, grades 9.0-9.6/10.
+- [EXAMPLES.md](EXAMPLES.md) — end-to-end worked example.
 
 ## Run the tests
 
