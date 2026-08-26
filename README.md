@@ -52,6 +52,14 @@ Seven real runs on dedicated agent containers (no human interventions), grouped 
 
 > Savings 84-95% across all runs (~6-20x). Provider pricing differs (DeepSeek, Qwen); per-test numbers use each account's effective tier.
 
+## Local models (docker container)
+
+For running agents against a LOCAL model backend (e.g. FreeToken with a MoE
+model), a parameterized Docker image is included in `docker/`: first boot
+renders `config.yaml` from env vars (`FREETOKEN_BASE_URL`, `MODEL_NAME`), no
+author data baked in. Build/run instructions and measured notes (KV cache
+budget, expert offload, thinking toggle) are in `docker/README.md`.
+
 ## Quick start
 
 ```bash
