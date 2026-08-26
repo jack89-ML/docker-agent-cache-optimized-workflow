@@ -1,0 +1,18 @@
+#!/command/with-contenv sh
+# shellcheck shell=sh
+# 03-skill-install — installs the cache-optimized-workflow skill on FIRST boot
+# (empty volume). Provider config is left to the user (hermes wizard).
+DATA="${HERMES_HOME:-/opt/data}"
+CAT="autonomous-ai-agents"
+DEST="$DATA/skills/$CAT/docker-agent-cache-optimized-workflow"
+SRC="/opt/setup/skill/docker-agent-cache-optimized-workflow"
+
+if [ -d "$SRC" ] && [ ! -d "$DEST" ]; then
+  echo "[repo] installing skill -> $DEST"
+  mkdir -p "$DATA/skills/$CAT"
+  cp -r "$SRC" "$DEST"
+  chown -R 10000:10000 "$DATA/skills"
+  echo "[repo] skill installed"
+else
+  echo "[repo] skill present or no skill bundle"
+fi

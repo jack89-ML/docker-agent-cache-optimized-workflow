@@ -54,23 +54,18 @@ Seven real runs on dedicated agent containers (no human interventions), grouped 
 
 ## Ready-to-use container (GHCR)
 
-A pre-built, pre-configured agent image is published on the GitHub Container
-Registry — pull it and run, no setup:
+A pre-configured agent container is published on the GitHub Container
+Registry: `hermes-agent` with this skill installed on first boot. Pull it,
+run, configure your provider key — that's it:
 
 ```bash
 docker pull ghcr.io/jack89-ml/docker-agent-cache-optimized-workflow:latest
-
-docker run -d --name bench --network host \
-  -e FREETOKEN_BASE_URL=http://YOUR-HOST:1919/v1 \
-  -e MODEL_NAME=your-model \
-  -v $PWD/data:/opt/data \
-  ghcr.io/jack89-ml/docker-agent-cache-optimized-workflow:latest sleep infinity
+docker run -it --name agent ghcr.io/jack89-ml/docker-agent-cache-optimized-workflow:latest
 ```
 
-First boot generates `config.yaml` from the env vars (model, backend URL,
-thinking disabled) — nothing about the author is baked in. Build it yourself
-from the sources in `docker/` (Dockerfile, config template, first-boot
-bootstrap) if you prefer.
+First boot: the hermes wizard asks for your provider key; the skill is then
+available as `docker-agent-cache-optimized-workflow`. Build it yourself from
+`docker/` (Dockerfile, skill bundle, first-boot installer) if you prefer.
 
 ## Quick start
 
