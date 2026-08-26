@@ -52,13 +52,25 @@ Seven real runs on dedicated agent containers (no human interventions), grouped 
 
 > Savings 84-95% across all runs (~6-20x). Provider pricing differs (DeepSeek, Qwen); per-test numbers use each account's effective tier.
 
-## Local models (docker container)
+## Ready-to-use container (GHCR)
 
-For running agents against a LOCAL model backend (e.g. FreeToken with a MoE
-model), a parameterized Docker image is included in `docker/`: first boot
-renders `config.yaml` from env vars (`FREETOKEN_BASE_URL`, `MODEL_NAME`), no
-author data baked in. Build/run instructions and measured notes (KV cache
-budget, expert offload, thinking toggle) are in `docker/README.md`.
+A pre-built, pre-configured agent image is published on the GitHub Container
+Registry — pull it and run, no setup:
+
+```bash
+docker pull ghcr.io/jack89-ml/docker-agent-cache-optimized-workflow:latest
+
+docker run -d --name bench --network host \
+  -e FREETOKEN_BASE_URL=http://YOUR-HOST:1919/v1 \
+  -e MODEL_NAME=your-model \
+  -v $PWD/data:/opt/data \
+  ghcr.io/jack89-ml/docker-agent-cache-optimized-workflow:latest sleep infinity
+```
+
+First boot generates `config.yaml` from the env vars (model, backend URL,
+thinking disabled) — nothing about the author is baked in. Build it yourself
+from the sources in `docker/` (Dockerfile, config template, first-boot
+bootstrap) if you prefer.
 
 ## Quick start
 
